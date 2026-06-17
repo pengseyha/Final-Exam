@@ -94,13 +94,33 @@ docker exec -it idcard-mysql mysql -uroot -p
 
 ### phpMyAdmin
 
+phpMyAdmin is published on all host interfaces:
+
+```bash
+docker ps --filter name=idcard-phpmyadmin --format '{{.Names}} {{.Status}} {{.Ports}}'
+# idcard-phpmyadmin ... 0.0.0.0:8082->80/tcp, [::]:8082->80/tcp
+```
+
 Open phpMyAdmin on the Docker host:
 
 ```text
 http://localhost:8082
 ```
 
-From another PC on the same network, use the host machine's LAN IP:
+From another PC on the same network, use the host machine's LAN IP. On this
+machine the current LAN URL is:
+
+```text
+http://192.168.21.150:8082
+```
+
+If the LAN IP changes, find the new one with:
+
+```bash
+hostname -I
+```
+
+Then open:
 
 ```text
 http://<server-ip>:8082
@@ -114,8 +134,21 @@ Login:
 | Username | `root` |
 | Password | `Hello@123` |
 
-If a remote PC cannot open phpMyAdmin, allow inbound TCP port `8082` in the
-host firewall.
+Quick checks from the Docker host:
+
+```bash
+curl -I http://localhost:8082
+curl -I http://192.168.21.150:8082
+```
+
+Both should return `HTTP/1.1 200 OK`. If a remote PC cannot open phpMyAdmin,
+allow inbound TCP port `8082` in the host firewall:
+
+```bash
+sudo ufw allow 8082/tcp
+sudo ufw reload
+sudo ufw status
+```
 
 Inside the MySQL shell:
 ```sql
