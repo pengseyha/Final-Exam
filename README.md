@@ -191,12 +191,18 @@ Runs on **every push**:
 | --- | --- |
 | `SMTP_SERVER`, `SMTP_PORT` | SMTP host/port for failure emails (e.g. `smtp.gmail.com`, `465`) |
 | `SMTP_USERNAME`, `SMTP_PASSWORD` | SMTP login (for Gmail use an App Password) |
-| `WEB_SSH_HOST`, `WEB_SSH_PORT`, `WEB_SSH_PASSWORD` | SSH target of the web server for deploy |
 
-> The web server runs on your local desktop, so a GitHub-hosted runner cannot reach
-> `127.0.0.1:2222`. Register a **self-hosted runner** on the desktop and change the
-> `deploy` job to `runs-on: self-hosted` (it can then reach the local container), or
-> point `WEB_SSH_*` at a publicly reachable SSH endpoint.
+### Self-hosted runner for deploy
+`build-and-test` runs on a GitHub-cloud runner, but **`deploy` runs on a self-hosted
+runner** because the web server is the local Docker container (`127.0.0.1:2222`), which
+the cloud cannot reach. Register a runner on the web-server host:
+
+```
+Repo → Settings → Actions → Runners → New self-hosted runner  (follow the shown commands)
+./run.sh            # keep it running; it picks up the deploy job
+```
+The host already has `ansible` + `sshpass`, and the playbook's inventory targets
+`127.0.0.1:2222`, so the deploy job just runs `ansible-playbook deploy.yml`.
 
 ---
 

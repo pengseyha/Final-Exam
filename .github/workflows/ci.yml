@@ -66,20 +66,15 @@ jobs:
   deploy:
     name: Deploy via Ansible
     needs: build-and-test          # only runs if build-and-test succeeded
-    runs-on: ubuntu-latest
-    # For a web server on your local desktop, register a self-hosted runner there
-    # and change to `runs-on: self-hosted` (then it can reach 127.0.0.1:2222).
+    # Self-hosted runner registered on the web-server host so it can reach the
+    # web container on 127.0.0.1:2222 (a GitHub-cloud runner cannot).
+    runs-on: self-hosted
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Ansible
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq ansible sshpass
-
       - name: Run Ansible playbook (deploy to Web Server)
         working-directory: ansible
-        run: |
-          ansible-playbook deploy.yml \
-            --extra-vars "ansible_host=${{ secrets.WEB_SSH_HOST }} ansible_port=${{ secrets.WEB_SSH_PORT }} ansible_ssh_pass=${{ secrets.WEB_SSH_PASSWORD }}"
+        # The inventory already targets the web server (127.0.0.1:2222, root/Hello@123);
+        # the runner host has ansible + sshpass installed.
+        run: ansible-playbook deploy.yml
