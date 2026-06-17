@@ -104,6 +104,57 @@ docker compose down -v         # stop and delete the MySQL volume
 
 ---
 
+## Databases per environment
+
+| Environment | Database | Configured in |
+| --- | --- | --- |
+| Production | **MySQL 8** | `application.properties` (`DB_URL` env) |
+| Tests | **SQLite** | `src/test/resources/application.properties` |
+| `h2` dev profile | H2 (in-memory) | `application-h2.properties` |
+
+Tests run against a SQLite file DB (`target/test-idcard.db`) via the
+`hibernate-community-dialects` SQLite dialect, so `mvn test` needs no MySQL.
+
+---
+
+## Ansible deployment (CHOICE_A = web server)
+
+[`ansible/deploy.yml`](ansible/deploy.yml) logs in to the **web container** over SSH
+(host port `2222`, root / `Hello@123`) and:
+
+1. `git pull`s the latest source (hard reset first, so local changes never block the pull);
+2. builds with Maven;
+3. runs the test suite against **SQLite**;
+4. backs up the **MySQL** production database with `mysqldump`.
+
+```bash
+cd ansible
+ansible-playbook deploy.yml
+```
+
+The backup is written inside the container at `/opt/backups/B-PENG_Seyha-db-<timestamp>.sql`.
+
+### Screenshots to submit (Ansible step)
+
+1. **The playbook file** — `ansible/deploy.yml` open in the editor.
+2. **`ansible-playbook deploy.yml` output** — the full run showing each task and the
+   final `PLAY RECAP` with `failed=0`, including the "Deployment report" lines:
+   - `Maven build: SUCCESS`
+   - `Tests: ... Tests run: 5, Failures: 0`
+   - `Backup file: ... /opt/backups/B-PENG_Seyha-db-<timestamp>.sql`
+3. **SQLite test proof** — in the run output, the "Run the test suite against the SQLite
+   test database" task (the test summary shows `Tests run: 5, Failures: 0`).
+4. **The backup exists** — `docker exec idcard-web ls -lh /opt/backups/` showing the
+   `.sql` file.
+5. *(optional)* **Backup is a real dump** —
+   `docker exec idcard-web sh -c 'grep "CREATE TABLE" /opt/backups/*.sql'`
+   showing the `profiles` and `templates` tables.
+
+> Prerequisite: the stack must be running (`docker compose up -d`) and your latest
+> commit pushed to GitHub, since the playbook does a `git pull` from the repo.
+
+---
+
 ## Configuration reference
 
 | Env var | Default | Meaning |

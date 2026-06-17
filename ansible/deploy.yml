@@ -1,0 +1,94 @@
+---
+# Ansible playbook: log in to the Web server (CHOICE_A) over SSH and:
+#   1. git pull the latest source (discarding any local changes first)
+#   2. build with Maven
+#   3. run the test suite (tests use SQLite; production uses MySQL)
+#   4. back up the MySQL production database
+#
+# Run with:   cd ansible && ansible-playbook deploy.yml
+- name: Deploy and back up the ID Card web server (CHOICE_A)
+  hosts: web
+  gather_facts: false
+  # Pin the JDK to the container's Temurin 25 (Maven's Debian wrapper would
+  # otherwise pick a different JDK when JAVA_HOME is unset over SSH).
+  environment:
+    JAVA_HOME: /opt/java/openjdk
+    PATH: "/opt/java/openjdk/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+  vars:
+    repo_url: "https://github.com/pengseyha/Final-Exam.git"
+    repo_branch: "main"
+    app_dir: "/opt/idcard"
+    backup_dir: "/opt/backups"
+    mysql_host: "mysql"
+    mysql_db: "B-PENG_Seyha-db"
+    mysql_user: "root"
+    mysql_password: "Hello@123"
+
+  pre_tasks:
+    - name: Bootstrap python3 on the target (required by Ansible modules)
+      ansible.builtin.raw: test -e /usr/bin/python3 || (apt-get update && apt-get install -y python3)
+      changed_when: false
+
+  tasks:
+    - name: Ensure git and the MySQL client are installed
+      ansible.builtin.shell: |
+        set -e
+        export DEBIAN_FRONTEND=noninteractive
+        apt-get update -qq
+        apt-get install -y -qq git default-mysql-client
+      changed_when: false
+
+    # force: true performs a hard reset before pulling, guaranteeing there are no
+    # local changes that would block the pull.
+    - name: Pull latest source (no local changes -> clean pull)
+      ansible.builtin.git:
+        repo: "{{ repo_url }}"
+        dest: "{{ app_dir }}"
+        version: "{{ repo_branch }}"
+        force: true
+
+    - name: Build with Maven (package, tests skipped here)
+      ansible.builtin.command:
+        cmd: mvn -B -ntp clean package -DskipTests
+        chdir: "{{ app_dir }}"
+      register: build_result
+
+    - name: Run the test suite against the SQLite test database
+      ansible.builtin.command:
+        cmd: mvn -B -ntp test
+        chdir: "{{ app_dir }}"
+      register: test_result
+
+    - name: Show test summary
+      ansible.builtin.debug:
+        msg: "{{ test_result.stdout_lines | select('search', 'Tests run:') | list }}"
+
+    - name: Ensure backup directory exists
+      ansible.builtin.file:
+        path: "{{ backup_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Compute a timestamp for the backup file
+      ansible.builtin.command: date +%Y%m%d-%H%M%S
+      register: ts
+      changed_when: false
+
+    - name: Back up the MySQL production database (mysqldump)
+      ansible.builtin.shell: >
+        mysqldump -h {{ mysql_host }} -P 3306 -u {{ mysql_user }} -p{{ mysql_password }}
+        --databases "{{ mysql_db }}"
+        > {{ backup_dir }}/{{ mysql_db }}-{{ ts.stdout }}.sql
+      register: backup_result
+
+    - name: Confirm the backup file
+      ansible.builtin.command: "ls -lh {{ backup_dir }}/{{ mysql_db }}-{{ ts.stdout }}.sql"
+      register: backup_ls
+      changed_when: false
+
+    - name: Deployment report
+      ansible.builtin.debug:
+        msg:
+          - "Maven build: SUCCESS"
+          - "Tests: {{ test_result.stdout_lines | select('search', 'Tests run:') | list | last | default('see log') }}"
+          - "Backup file: {{ backup_ls.stdout }}"

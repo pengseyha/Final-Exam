@@ -3,6 +3,8 @@ target/
 
 ### App runtime ###
 uploads/
+backups/
+*.db
 !**/src/main/**/target/
 !**/src/test/**/target/
 
