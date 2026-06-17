@@ -20,11 +20,14 @@ jobs:
           java-version: '25'
           cache: maven
 
-      - name: Build and test
+      - name: Build
         run: |
           chmod +x mvnw
-          ./mvnw -B -ntp clean package
-        # `package` compiles, runs the tests against the SQLite test DB, and builds the WAR.
+          ./mvnw -B -ntp clean package -DskipTests
+
+      - name: Test (SQLite)
+        run: ./mvnw -B -ntp test
+        # Tests run against the SQLite test DB; production uses MySQL.
 
       - name: Publish test report
         if: always()
