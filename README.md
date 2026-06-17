@@ -155,6 +155,27 @@ The backup is written inside the container at `/opt/backups/B-PENG_Seyha-db-<tim
 
 ---
 
+## Jenkins CI/CD ([Jenkinsfile](Jenkinsfile))
+
+A declarative pipeline drives continuous integration and deployment:
+
+1. **Poll SCM every 5 minutes** (`pollSCM('H/5 * * * *')`) — builds on new Git commits.
+2. **Build & test** — `mvnw clean package` then `mvnw test` (against the SQLite test DB).
+3. **Email on failure** — notifies the **developer who committed** the breaking change
+   (`culprits()`) and **CCs `srengty@gmail.com`**.
+4. **Deploy on success** — runs the Ansible playbook (`ansible/deploy.yml`) to the web server.
+
+### One-time Jenkins setup
+1. **New Item → Pipeline**.
+2. Under *Pipeline*, choose **"Pipeline script from SCM"**, select **Git**, set the repo URL
+   (`https://github.com/pengseyha/Final-Exam.git`) and **Script Path** `Jenkinsfile`.
+3. Tick **"Poll SCM"** (the schedule comes from the Jenkinsfile trigger).
+4. Configure **Manage Jenkins → System → Extended E-mail Notification** (SMTP host, credentials,
+   default *From*) so failure emails can be sent.
+5. Ensure the agent has **JDK 25, Git, and Ansible**, and can SSH to the web server on port 2222.
+
+---
+
 ## Configuration reference
 
 | Env var | Default | Meaning |
