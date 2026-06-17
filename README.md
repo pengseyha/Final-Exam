@@ -176,6 +176,30 @@ A declarative pipeline drives continuous integration and deployment:
 
 ---
 
+## GitHub Actions CI/CD ([.github/workflows/ci.yml](.github/workflows/ci.yml))
+
+Runs on **every push**:
+
+1. **Build & test** — JDK 25, `mvnw clean package` (tests use the SQLite test DB).
+2. **Email on failure** — emails the **developer who committed** (HEAD commit author)
+   and **CCs `srengty@gmail.com`** via SMTP.
+3. **Deploy on success** — a separate `deploy` job (`needs: build-and-test`) runs the
+   Ansible playbook against the web server.
+
+### Required repository secrets (Settings → Secrets and variables → Actions)
+| Secret | Purpose |
+| --- | --- |
+| `SMTP_SERVER`, `SMTP_PORT` | SMTP host/port for failure emails (e.g. `smtp.gmail.com`, `465`) |
+| `SMTP_USERNAME`, `SMTP_PASSWORD` | SMTP login (for Gmail use an App Password) |
+| `WEB_SSH_HOST`, `WEB_SSH_PORT`, `WEB_SSH_PASSWORD` | SSH target of the web server for deploy |
+
+> The web server runs on your local desktop, so a GitHub-hosted runner cannot reach
+> `127.0.0.1:2222`. Register a **self-hosted runner** on the desktop and change the
+> `deploy` job to `runs-on: self-hosted` (it can then reach the local container), or
+> point `WEB_SSH_*` at a publicly reachable SSH endpoint.
+
+---
+
 ## Configuration reference
 
 | Env var | Default | Meaning |

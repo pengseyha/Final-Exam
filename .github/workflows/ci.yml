@@ -1,0 +1,82 @@
+name: CI/CD
+
+# Run on every commit pushed to the repository (any branch), plus manual runs.
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    name: Build & Test (SQLite)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 25 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+
+      - name: Build and test
+        run: |
+          chmod +x mvnw
+          ./mvnw -B -ntp clean package
+        # `package` compiles, runs the tests against the SQLite test DB, and builds the WAR.
+
+      - name: Publish test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: target/surefire-reports/*.xml
+          if-no-files-found: ignore
+
+      # On build/test failure: email the developer who committed (the HEAD commit
+      # author) and CC the instructor. Requires SMTP_* repository secrets.
+      - name: Email on failure
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.SMTP_SERVER }}
+          server_port: ${{ secrets.SMTP_PORT }}
+          secure: true
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          from: "CI Bot <${{ secrets.SMTP_USERNAME }}>"
+          to: ${{ github.event.head_commit.author.email }}
+          cc: srengty@gmail.com
+          subject: "❌ Build failed: ${{ github.repository }} #${{ github.run_number }}"
+          body: |
+            The build/test failed for ${{ github.repository }}.
+
+            Commit:   ${{ github.sha }}
+            Author:   ${{ github.event.head_commit.author.name }} <${{ github.event.head_commit.author.email }}>
+            Message:  ${{ github.event.head_commit.message }}
+            Branch:   ${{ github.ref_name }}
+
+            See the run log:
+            ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+  deploy:
+    name: Deploy via Ansible
+    needs: build-and-test          # only runs if build-and-test succeeded
+    runs-on: ubuntu-latest
+    # For a web server on your local desktop, register a self-hosted runner there
+    # and change to `runs-on: self-hosted` (then it can reach 127.0.0.1:2222).
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Ansible
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ansible sshpass
+
+      - name: Run Ansible playbook (deploy to Web Server)
+        working-directory: ansible
+        run: |
+          ansible-playbook deploy.yml \
+            --extra-vars "ansible_host=${{ secrets.WEB_SSH_HOST }} ansible_port=${{ secrets.WEB_SSH_PORT }} ansible_ssh_pass=${{ secrets.WEB_SSH_PASSWORD }}"
