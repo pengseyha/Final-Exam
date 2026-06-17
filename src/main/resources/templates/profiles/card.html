@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="card" class="idcard"
+     th:style="|--primary:${card.primaryColor};--secondary:${card.secondaryColor};--text:${card.textColor};|">
+    <div class="idcard-header">
+        <div class="org" th:text="${card.organizationName}">Organization</div>
+        <div class="tagline" th:if="${card.tagline}" th:text="${card.tagline}">Tagline</div>
+        <div class="type" th:text="${card.typeLabel} + ' IDENTITY CARD'">USER IDENTITY CARD</div>
+    </div>
+    <div class="idcard-body">
+        <img class="photo" th:if="${card.hasPhoto()}" th:src="${card.photoSrc}" alt="Photo"/>
+        <div class="photo placeholder" th:unless="${card.hasPhoto()}">No Photo</div>
+        <div class="name" th:text="${card.fullName} ?: '—'">Full Name</div>
+        <div class="title" th:if="${card.title}" th:text="${card.title}">Title</div>
+        <table class="details">
+            <tr><th>ID No.</th><td th:text="${card.registrationNumber} ?: '—'">—</td></tr>
+            <tr th:if="${card.department}"><th>Department</th><td th:text="${card.department}"></td></tr>
+            <tr th:if="${card.bloodGroup}"><th>Blood Group</th><td th:text="${card.bloodGroup}"></td></tr>
+            <tr th:if="${card.dateOfBirth}"><th>Date of Birth</th><td th:text="${card.dateOfBirth}"></td></tr>
+            <tr th:if="${card.issueDate}"><th>Issued</th><td th:text="${card.issueDate}"></td></tr>
+            <tr th:if="${card.expiryDate}"><th>Expires</th><td th:text="${card.expiryDate}"></td></tr>
+            <tr th:if="${card.email}"><th>Email</th><td th:text="${card.email}"></td></tr>
+            <tr th:if="${card.phone}"><th>Phone</th><td th:text="${card.phone}"></td></tr>
+        </table>
+    </div>
+    <div class="idcard-codes">
+        <img class="qr" th:src="${card.qrSrc}" alt="QR code"/>
+        <div class="barcode">
+            <img th:src="${card.barcodeSrc}" alt="Barcode"/>
+            <div class="reg" th:text="${card.registrationNumber}">2026-PRV-000</div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

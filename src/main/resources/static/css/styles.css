@@ -1,0 +1,110 @@
+:root {
+    --bg: #f3f4f6;
+    --panel: #ffffff;
+    --line: #e5e7eb;
+    --muted: #6b7280;
+    --accent: #1d4ed8;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: #111827;
+}
+
+.topnav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #111827;
+    color: #fff;
+    padding: 0.75rem 1.5rem;
+}
+.topnav .brand { color: #fff; font-weight: 700; text-decoration: none; font-size: 1.1rem; }
+.topnav .links a { color: #d1d5db; text-decoration: none; margin-left: 1.2rem; }
+.topnav .links a:hover { color: #fff; }
+
+.container { max-width: 1100px; margin: 1.5rem auto; padding: 0 1.25rem; }
+
+.flash {
+    background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46;
+    padding: 0.7rem 1rem; border-radius: 8px; margin-bottom: 1rem;
+}
+
+.panel {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 12px; padding: 1.25rem; margin-bottom: 1.25rem;
+}
+
+h1 { font-size: 1.5rem; margin: 0 0 1rem; }
+h2 { font-size: 1.15rem; margin: 0 0 0.75rem; }
+
+table.grid { width: 100%; border-collapse: collapse; }
+table.grid th, table.grid td { text-align: left; padding: 0.6rem 0.5rem; border-bottom: 1px solid var(--line); }
+table.grid th { color: var(--muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.03em; }
+
+.btn {
+    display: inline-block; border: none; border-radius: 8px; cursor: pointer;
+    padding: 0.5rem 0.9rem; font-size: 0.9rem; text-decoration: none;
+    background: var(--accent); color: #fff;
+}
+.btn.secondary { background: #e5e7eb; color: #111827; }
+.btn.danger { background: #dc2626; }
+.btn.small { padding: 0.3rem 0.6rem; font-size: 0.8rem; }
+
+.toolbar { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; margin-bottom: 1rem; }
+
+label { display: block; font-size: 0.85rem; color: var(--muted); margin: 0.6rem 0 0.2rem; }
+input, select, textarea {
+    width: 100%; padding: 0.5rem 0.6rem; border: 1px solid var(--line);
+    border-radius: 8px; font-size: 0.92rem; background: #fff;
+}
+
+.form-layout { display: grid; grid-template-columns: 1fr 360px; gap: 1.5rem; align-items: start; }
+.field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1rem; }
+.preview-pane { position: sticky; top: 1rem; }
+.badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 999px; font-size: 0.75rem; background: #e0e7ff; color: #3730a3; }
+
+/* ----- ID card ----- */
+.idcard {
+    width: 320px;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid var(--line);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    color: var(--text, #111827);
+    font-size: 0.85rem;
+}
+.idcard-header {
+    background: var(--primary, #1d4ed8);
+    color: #fff;
+    padding: 0.9rem 1rem;
+}
+.idcard-header .org { font-weight: 700; font-size: 1.05rem; }
+.idcard-header .tagline { font-size: 0.72rem; opacity: 0.9; }
+.idcard-header .type { font-size: 0.68rem; letter-spacing: 0.08em; margin-top: 0.35rem; }
+.idcard-body { padding: 1rem; text-align: center; }
+.idcard-body .photo {
+    width: 110px; height: 138px; object-fit: cover; border-radius: 8px;
+    border: 3px solid var(--secondary, #e0e7ff); margin: 0 auto; display: block; background: #f3f4f6;
+}
+.idcard-body .photo.placeholder {
+    display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 0.75rem;
+}
+.idcard-body .name { font-weight: 700; font-size: 1.1rem; margin-top: 0.6rem; }
+.idcard-body .title { color: var(--muted); font-size: 0.8rem; }
+.idcard .details { width: 100%; margin-top: 0.7rem; border-collapse: collapse; text-align: left; }
+.idcard .details th { color: var(--muted); font-weight: 600; font-size: 0.72rem; padding: 0.15rem 0; width: 42%; }
+.idcard .details td { font-size: 0.78rem; padding: 0.15rem 0; }
+.idcard-codes {
+    display: flex; align-items: center; gap: 0.8rem;
+    padding: 0.8rem 1rem; border-top: 1px solid var(--line); background: var(--secondary, #f8fafc);
+}
+.idcard-codes .qr { width: 78px; height: 78px; }
+.idcard-codes .barcode { flex: 1; text-align: center; }
+.idcard-codes .barcode img { max-width: 100%; height: 54px; }
+.idcard-codes .barcode .reg { font-size: 0.68rem; letter-spacing: 0.05em; }

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Edit Template')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: nav}"></nav>
+<div class="container">
+    <h1 th:text="${template.id != null} ? 'Edit Template' : 'New Template'">New Template</h1>
+
+    <div class="panel" style="max-width:560px">
+        <form method="post"
+              th:action="${template.id != null} ? @{/templates/{id}(id=${template.id})} : @{/templates}"
+              th:object="${template}">
+            <div class="field-grid">
+                <div>
+                    <label>Code</label>
+                    <input type="text" th:field="*{code}" required th:readonly="${template.id != null}"/>
+                </div>
+                <div>
+                    <label>Name</label>
+                    <input type="text" th:field="*{name}" required/>
+                </div>
+            </div>
+            <label>Organization name</label>
+            <input type="text" th:field="*{organizationName}"/>
+            <label>Tagline</label>
+            <input type="text" th:field="*{tagline}"/>
+            <div class="field-grid">
+                <div>
+                    <label>Layout</label>
+                    <select th:field="*{layout}">
+                        <option value="VERTICAL">VERTICAL</option>
+                        <option value="HORIZONTAL">HORIZONTAL</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Primary color</label>
+                    <input type="color" th:field="*{primaryColor}"/>
+                </div>
+                <div>
+                    <label>Secondary color</label>
+                    <input type="color" th:field="*{secondaryColor}"/>
+                </div>
+                <div>
+                    <label>Text color</label>
+                    <input type="color" th:field="*{textColor}"/>
+                </div>
+            </div>
+            <div class="toolbar" style="margin-top:1rem">
+                <button class="btn" type="submit">Save</button>
+                <a class="btn secondary" th:href="@{/templates}">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

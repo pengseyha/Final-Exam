@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Templates')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: nav}"></nav>
+<div class="container">
+    <div th:if="${message}" class="flash" th:text="${message}"></div>
+    <h1>Card Templates</h1>
+
+    <form class="toolbar" method="get" th:action="@{/templates}">
+        <input type="text" name="q" th:value="${q}" placeholder="Search templates" style="max-width:280px"/>
+        <button class="btn" type="submit">Search</button>
+        <a class="btn secondary" th:href="@{/templates/new}">+ New Template</a>
+    </form>
+
+    <div class="panel">
+        <table class="grid">
+            <thead><tr><th>Code</th><th>Name</th><th>Organization</th><th>Colors</th><th>Actions</th></tr></thead>
+            <tbody>
+            <tr th:if="${templates.isEmpty()}"><td colspan="5">No templates yet.</td></tr>
+            <tr th:each="t : ${templates}">
+                <td th:text="${t.code}"></td>
+                <td th:text="${t.name}"></td>
+                <td th:text="${t.organizationName}"></td>
+                <td>
+                    <span th:style="|display:inline-block;width:18px;height:18px;border-radius:4px;background:${t.primaryColor};|"></span>
+                    <span th:style="|display:inline-block;width:18px;height:18px;border-radius:4px;background:${t.secondaryColor};|"></span>
+                </td>
+                <td>
+                    <a class="btn small secondary" th:href="@{/templates/{id}/edit(id=${t.id})}">Edit</a>
+                    <form method="post" th:action="@{/templates/{id}/delete(id=${t.id})}" style="display:inline"
+                          onsubmit="return confirm('Delete this template?');">
+                        <button class="btn small danger" type="submit">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

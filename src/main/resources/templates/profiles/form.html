@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Edit Card')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: nav}"></nav>
+<div class="container">
+    <h1 th:text="${profile.id != null} ? 'Edit Card' : 'New Card'">New Card</h1>
+
+    <div class="form-layout">
+        <div class="panel">
+            <form id="profileForm" method="post" enctype="multipart/form-data"
+                  th:action="${profile.id != null} ? @{/profiles/{id}(id=${profile.id})} : @{/profiles}"
+                  th:object="${profile}">
+
+                <div class="field-grid">
+                    <div>
+                        <label>Type</label>
+                        <select th:field="*{type}">
+                            <option th:each="t : ${types}" th:value="${t}" th:text="${t}"></option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Template</label>
+                        <select name="templateId">
+                            <option value="">— default —</option>
+                            <option th:each="t : ${templates}" th:value="${t.id}" th:text="${t.name}"
+                                    th:selected="${profile.template != null and profile.template.id == t.id}"></option>
+                        </select>
+                    </div>
+                </div>
+
+                <label>Full name</label>
+                <input type="text" th:field="*{fullName}" required/>
+
+                <div class="field-grid">
+                    <div>
+                        <label>Title / Program</label>
+                        <input type="text" th:field="*{title}"/>
+                    </div>
+                    <div>
+                        <label>Department</label>
+                        <input type="text" th:field="*{department}"/>
+                    </div>
+                    <div>
+                        <label>Email</label>
+                        <input type="email" th:field="*{email}"/>
+                    </div>
+                    <div>
+                        <label>Phone</label>
+                        <input type="text" th:field="*{phone}"/>
+                    </div>
+                    <div>
+                        <label>Blood group</label>
+                        <input type="text" th:field="*{bloodGroup}"/>
+                    </div>
+                    <div>
+                        <label>Date of birth</label>
+                        <input type="date" th:field="*{dateOfBirth}"/>
+                    </div>
+                    <div>
+                        <label>Issue date</label>
+                        <input type="date" th:field="*{issueDate}"/>
+                    </div>
+                    <div>
+                        <label>Expiry date</label>
+                        <input type="date" th:field="*{expiryDate}"/>
+                    </div>
+                    <div>
+                        <label>Barcode type</label>
+                        <select th:field="*{barcodeType}">
+                            <option th:each="b : ${barcodeTypes}" th:value="${b}" th:text="${b}"></option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Photo (JPEG / PNG)</label>
+                        <input id="photoInput" type="file" name="photo" accept="image/jpeg,image/png"/>
+                    </div>
+                </div>
+
+                <div th:if="${profile.id != null and profile.hasPhoto()}">
+                    <label><input type="checkbox" name="removePhoto" value="true" style="width:auto"/> Remove current photo</label>
+                </div>
+
+                <div class="toolbar" style="margin-top:1rem">
+                    <button class="btn" type="submit">Save Card</button>
+                    <a class="btn secondary" th:href="@{/profiles}">Cancel</a>
+                </div>
+            </form>
+        </div>
+
+        <div class="preview-pane">
+            <h2>Live preview</h2>
+            <div id="preview">Fill the form to see a preview…</div>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/preview.js}"></script>
+</body>
+</html>

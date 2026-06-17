@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Card')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: nav}"></nav>
+<div class="container">
+    <div th:if="${message}" class="flash" th:text="${message}"></div>
+    <h1 th:text="${profile.fullName}">Name</h1>
+
+    <div class="form-layout">
+        <div class="panel">
+            <h2>Details</h2>
+            <table class="grid">
+                <tr><th>Registration No.</th><td th:text="${profile.registrationNumber}"></td></tr>
+                <tr><th>UUID</th><td th:text="${profile.uuid}"></td></tr>
+                <tr><th>Type</th><td th:text="${profile.type}"></td></tr>
+                <tr><th>Department</th><td th:text="${profile.department}"></td></tr>
+                <tr><th>Title</th><td th:text="${profile.title}"></td></tr>
+                <tr><th>Email</th><td th:text="${profile.email}"></td></tr>
+                <tr><th>Phone</th><td th:text="${profile.phone}"></td></tr>
+                <tr><th>Verification</th><td><a th:href="${card.verificationUrl}" th:text="${card.verificationUrl}"></a></td></tr>
+            </table>
+            <div class="toolbar" style="margin-top:1rem">
+                <a class="btn" th:href="@{/profiles/{id}/pdf(id=${profile.id})}">Download PDF</a>
+                <a class="btn secondary" th:href="@{/profiles/{id}/edit(id=${profile.id})}">Edit</a>
+                <a class="btn secondary" th:href="@{/profiles}">Back</a>
+            </div>
+        </div>
+        <div class="preview-pane">
+            <h2>ID Card</h2>
+            <div th:replace="~{profiles/card :: card}"></div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

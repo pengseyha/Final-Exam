@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Verify Card')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: nav}"></nav>
+<div class="container">
+    <h1>Card Verification</h1>
+    <p>This is a valid ID card registered in the system.</p>
+    <div class="form-layout">
+        <div class="panel">
+            <table class="grid">
+                <tr><th>Name</th><td th:text="${profile.fullName}"></td></tr>
+                <tr><th>Registration No.</th><td th:text="${profile.registrationNumber}"></td></tr>
+                <tr><th>Type</th><td th:text="${profile.type}"></td></tr>
+                <tr><th>Department</th><td th:text="${profile.department}"></td></tr>
+                <tr><th>Valid until</th><td th:text="${card.expiryDate}"></td></tr>
+            </table>
+        </div>
+        <div class="preview-pane">
+            <div th:replace="~{profiles/card :: card}"></div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

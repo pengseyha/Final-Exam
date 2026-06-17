@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Profiles')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: nav}"></nav>
+<div class="container">
+    <div th:if="${message}" class="flash" th:text="${message}"></div>
+
+    <h1>Profiles</h1>
+
+    <form class="toolbar" method="get" th:action="@{/profiles}">
+        <input type="text" name="q" th:value="${q}" placeholder="Search name, ID, department, email" style="max-width:320px"/>
+        <select name="type" style="max-width:160px">
+            <option value="">All types</option>
+            <option th:each="t : ${types}" th:value="${t}" th:text="${t}" th:selected="${t == type}"></option>
+        </select>
+        <button class="btn" type="submit">Search</button>
+        <a class="btn secondary" th:href="@{/profiles/new}">+ New Card</a>
+    </form>
+
+    <div class="panel">
+        <table class="grid">
+            <thead>
+            <tr><th>ID No.</th><th>Name</th><th>Type</th><th>Department</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+            <tr th:if="${profiles.isEmpty()}"><td colspan="5">No profiles yet.</td></tr>
+            <tr th:each="p : ${profiles.content}">
+                <td th:text="${p.registrationNumber}">2026-ENG-001</td>
+                <td><a th:href="@{/profiles/{id}(id=${p.id})}" th:text="${p.fullName}">Name</a></td>
+                <td><span class="badge" th:text="${p.type}">STUDENT</span></td>
+                <td th:text="${p.department}">Dept</td>
+                <td>
+                    <a class="btn small secondary" th:href="@{/profiles/{id}/edit(id=${p.id})}">Edit</a>
+                    <a class="btn small" th:href="@{/profiles/{id}/pdf(id=${p.id})}">PDF</a>
+                    <form method="post" th:action="@{/profiles/{id}/delete(id=${p.id})}" style="display:inline"
+                          onsubmit="return confirm('Delete this profile?');">
+                        <button class="btn small danger" type="submit">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="panel">
+        <h2>Batch generation</h2>
+        <p>Download a ZIP of ID cards for an entire group.</p>
+        <div class="toolbar">
+            <a class="btn" th:href="@{/batch/type/STUDENT}">All Students (ZIP)</a>
+            <a class="btn" th:href="@{/batch/type/EMPLOYEE}">All Employees (ZIP)</a>
+            <form method="post" th:action="@{/batch}" style="display:inline">
+                <button class="btn secondary" type="submit">All Profiles (ZIP)</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
