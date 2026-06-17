@@ -68,4 +68,11 @@ class ProfileRepositoryTest {
         assertThat(byType.getContent()).hasSize(1);
         assertThat(byType.getContent().get(0).getType()).isEqualTo(ProfileType.EMPLOYEE);
     }
+
+    // TEMPORARY: intentionally failing test to demonstrate the CI failure email.
+    // Remove this commit (or revert) after capturing the screenshot.
+    @Test
+    void ciFailureEmailDemo() {
+        assertThat(1).isEqualTo(2);
+    }
 }
