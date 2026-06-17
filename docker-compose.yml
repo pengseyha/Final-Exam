@@ -1,7 +1,8 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# Two-container deployment:
+# Three-container deployment:
 #   web   – Spring Boot (8081) behind NGINX (8080) + SSH (22)
 #   mysql – MySQL 8 with a named volume
+#   phpmyadmin – browser UI for managing MySQL remotely
 # ─────────────────────────────────────────────────────────────────────────────
 services:
 
@@ -44,6 +45,23 @@ services:
     ports:
       - "8443:8080"          # host 8443 -> NGINX 8080 (website)
       - "2222:22"            # host 2222 -> SSH 22
+    networks:
+      - appnet
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: idcard-phpmyadmin
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 0
+      UPLOAD_LIMIT: 64M
+    ports:
+      - "8082:80"            # host 8082 -> phpMyAdmin 80 (remote access)
     networks:
       - appnet
 

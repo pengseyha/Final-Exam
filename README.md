@@ -47,19 +47,21 @@ Then open <http://localhost:8080>.
 
 ---
 
-## Docker deployment (2 containers)
+## Docker deployment (3 containers)
 
-Two services are defined in [`docker-compose.yml`](docker-compose.yml):
+Three services are defined in [`docker-compose.yml`](docker-compose.yml):
 
 - **`idcard-web`** — JDK 25 + Maven + Git + NGINX + OpenSSH. Builds and runs this
   project internally on **8081**; NGINX listens on **8080** and proxies to it.
 - **`idcard-mysql`** — MySQL 8 with a named volume `mysql-data`.
+- **`idcard-phpmyadmin`** — phpMyAdmin for browser-based MySQL management.
 
 | Service | Host port | Container port | Purpose |
 | --- | --- | --- | --- |
 | web (NGINX → Spring Boot) | **8443** | 8080 → 8081 | Website |
 | web (SSH) | **2222** | 22 | SSH (root / `Hello@123`) |
 | mysql | **3307** | 3306 | MySQL 8 |
+| phpMyAdmin | **8082** | 80 | MySQL admin UI |
 
 Spring Boot connects to MySQL using the datasource URL supplied via environment
 variables in `docker-compose.yml`:
@@ -89,6 +91,31 @@ ssh root@localhost -p 2222
 # open a MySQL shell (password: Hello@123)
 docker exec -it idcard-mysql mysql -uroot -p
 ```
+
+### phpMyAdmin
+
+Open phpMyAdmin on the Docker host:
+
+```text
+http://localhost:8082
+```
+
+From another PC on the same network, use the host machine's LAN IP:
+
+```text
+http://<server-ip>:8082
+```
+
+Login:
+
+| Field | Value |
+| --- | --- |
+| Server | `mysql` |
+| Username | `root` |
+| Password | `Hello@123` |
+
+If a remote PC cannot open phpMyAdmin, allow inbound TCP port `8082` in the
+host firewall.
 
 Inside the MySQL shell:
 ```sql
