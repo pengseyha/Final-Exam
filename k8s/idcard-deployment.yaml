@@ -1,0 +1,141 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Kubernetes manifest equivalent of docker-compose.yml.
+# Two workloads: the Spring Boot web app (behind NGINX) and MySQL 8.
+#
+# NOTE: this project is normally run with Docker Compose (`docker compose up --build`).
+# These manifests are the Kubernetes equivalent. The web image must be available
+# to the cluster first, e.g.:
+#     docker build -t idcard-web:latest .
+#     kind load docker-image idcard-web:latest      # if using kind
+# then:
+#     kubectl apply -f k8s/idcard-deployment.yaml
+# ─────────────────────────────────────────────────────────────────────────────
+apiVersion: v1
+kind: Secret
+metadata:
+  name: idcard-db-secret
+type: Opaque
+stringData:
+  MYSQL_ROOT_PASSWORD: "Hello@123"
+  MYSQL_DATABASE: "B-PENG_Seyha-db"
+  DB_USERNAME: "root"
+  DB_PASSWORD: "Hello@123"
+  DB_URL: "jdbc:mysql://mysql:3306/B-PENG_Seyha-db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+  labels:
+    app: mysql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8
+          ports:
+            - containerPort: 3306
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef: { name: idcard-db-secret, key: MYSQL_ROOT_PASSWORD }
+            - name: MYSQL_DATABASE
+              valueFrom:
+                secretKeyRef: { name: idcard-db-secret, key: MYSQL_DATABASE }
+          volumeMounts:
+            - name: mysql-data
+              mountPath: /var/lib/mysql
+          readinessProbe:
+            exec:
+              command: ["mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-pHello@123"]
+            initialDelaySeconds: 20
+            periodSeconds: 10
+      volumes:
+        - name: mysql-data
+          persistentVolumeClaim:
+            claimName: mysql-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+spec:
+  selector:
+    app: mysql
+  ports:
+    - name: mysql
+      port: 3306
+      targetPort: 3306
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: idcard-web
+  labels:
+    app: idcard-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: idcard-web
+  template:
+    metadata:
+      labels:
+        app: idcard-web
+    spec:
+      containers:
+        - name: idcard-web
+          image: idcard-web:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080   # NGINX
+            - containerPort: 22     # SSH
+          env:
+            - name: DB_URL
+              valueFrom:
+                secretKeyRef: { name: idcard-db-secret, key: DB_URL }
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef: { name: idcard-db-secret, key: DB_USERNAME }
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef: { name: idcard-db-secret, key: DB_PASSWORD }
+            - name: APP_BASE_URL
+              value: "http://localhost:30080"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: idcard-web
+spec:
+  type: NodePort
+  selector:
+    app: idcard-web
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      nodePort: 30080   # website  -> http://<node-ip>:30080
+    - name: ssh
+      port: 22
+      targetPort: 22
+      nodePort: 30022   # ssh       -> ssh root@<node-ip> -p 30022

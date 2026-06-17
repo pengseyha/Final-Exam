@@ -1,0 +1,55 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Two-container deployment:
+#   web   – Spring Boot (8081) behind NGINX (8080) + SSH (22)
+#   mysql – MySQL 8 with a named volume
+# ─────────────────────────────────────────────────────────────────────────────
+services:
+
+  mysql:
+    image: mysql:8
+    container_name: idcard-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: "Hello@123"
+      MYSQL_DATABASE: "B-PENG_Seyha-db"
+    ports:
+      - "3307:3306"          # host 3307 -> container 3306
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-pHello@123"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
+    networks:
+      - appnet
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: idcard-web
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy   # only start once MySQL is ready
+    environment:
+      # Datasource is supplied entirely via environment variables.
+      DB_URL: "jdbc:mysql://mysql:3306/B-PENG_Seyha-db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+      DB_USERNAME: "root"
+      DB_PASSWORD: "Hello@123"
+      # Base URL embedded in QR verification links (matches the published host port).
+      APP_BASE_URL: "http://localhost:8443"
+    ports:
+      - "8443:8080"          # host 8443 -> NGINX 8080 (website)
+      - "2222:22"            # host 2222 -> SSH 22
+    networks:
+      - appnet
+
+volumes:
+  mysql-data:
+
+networks:
+  appnet:
+    driver: bridge
